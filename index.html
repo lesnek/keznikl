@@ -1,0 +1,1594 @@
+<!doctype html>
+<html lang="cs">
+  <head>
+    <meta charset="utf-8" />
+    <link href="assets/092508b7d_logo.png" rel="icon" type="image/svg+xml" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+
+    <title>Keznikl Flow</title>
+
+    <meta
+      content="A high-performance digital ecosystem for elite skiers, blending technical precision with fluid, motion-driven coaching experiences."
+      name="description"
+    />
+    <meta content="Keznikl Flow" property="og:title" />
+    <meta
+      content="A high-performance digital ecosystem for elite skiers, blending technical precision with fluid, motion-driven coaching experiences."
+      property="og:description"
+    />
+    <meta content="assets/092508b7d_logo.png" property="og:image" />
+    <meta
+      content="https://keznikl-flow-31d44c42.base44.app"
+      property="og:url"
+    />
+    <meta content="website" property="og:type" />
+    <meta content="Keznikl Flow" property="og:site_name" />
+    <meta content="Keznikl Flow" name="twitter:title" />
+    <meta
+      content="A high-performance digital ecosystem for elite skiers, blending technical precision with fluid, motion-driven coaching experiences."
+      name="twitter:description"
+    />
+    <meta content="assets/092508b7d_logo.png" name="twitter:image" />
+    <meta content="summary_large_image" name="twitter:card" />
+    <meta
+      content="https://keznikl-flow-31d44c42.base44.app"
+      name="twitter:url"
+    />
+    <meta content="yes" name="mobile-web-app-capable" />
+    <meta content="black" name="apple-mobile-web-app-status-bar-style" />
+    <meta content="Keznikl Flow" name="apple-mobile-web-app-title" />
+    <link href="https://keznikl-flow-31d44c42.base44.app" rel="canonical" />
+
+    <link rel="stylesheet" href="styles.css" />
+    <script src="nastaveni.js"></script>
+    <style>
+      html {
+        scroll-behavior: smooth;
+      }
+
+      #site-banner {
+        position: fixed;
+        inset: 0 0 auto 0;
+        z-index: 1000;
+        padding: 0.7rem 3rem;
+        background: hsl(var(--primary));
+        color: hsl(var(--primary-foreground));
+        font-family: inherit;
+        font-size: 0.9rem;
+        font-weight: 600;
+        line-height: 1.4;
+        text-align: center;
+        box-shadow: 0 1px 0 hsl(var(--border));
+      }
+
+      #site-banner a {
+        margin-left: 0.75rem;
+        color: inherit;
+        text-decoration: underline;
+        text-underline-offset: 0.2em;
+      }
+
+      html.has-site-banner body {
+        padding-top: var(--site-banner-height);
+      }
+
+      html.has-site-banner header {
+        top: var(--site-banner-height) !important;
+      }
+
+      @media (max-width: 640px) {
+        #site-banner {
+          padding-inline: 1rem;
+          font-size: 0.8rem;
+        }
+
+        #site-banner a {
+          display: block;
+          margin: 0.25rem 0 0;
+        }
+      }
+    </style>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const siteSettings = window.NASTAVENI || {};
+
+        const applyContactSettings = (root = document) => {
+          const contact = siteSettings.kontakt;
+          if (!contact) return;
+
+          root.querySelectorAll('a[href^="mailto:"]').forEach((link) => {
+            const currentHref = link.getAttribute("href") || "";
+            const query = currentHref.includes("?")
+              ? currentHref.slice(currentHref.indexOf("?"))
+              : "";
+            link.href = `mailto:${contact.email}${query}`;
+
+            if (link.children.length === 0 && link.textContent.includes("@")) {
+              link.textContent = contact.email;
+            }
+            link.querySelectorAll("p").forEach((text) => {
+              if (text.textContent.includes("@")) text.textContent = contact.email;
+            });
+          });
+
+          root.querySelectorAll('a[href^="tel:"]').forEach((link) => {
+            link.href = `tel:${contact.telefon}`;
+            if (link.children.length === 0) {
+              link.textContent = contact.telefonZobrazeni;
+            }
+            link.querySelectorAll("p").forEach((text) => {
+              if (/\d/.test(text.textContent)) {
+                text.textContent = contact.telefonZobrazeni;
+              }
+            });
+          });
+
+          root.querySelectorAll("[data-contact-location]").forEach((text) => {
+            text.textContent = contact.lokalita;
+          });
+        };
+
+        const renderSiteBanner = () => {
+          const banner = siteSettings.banner;
+          if (!banner?.zobrazit || !banner.text) return;
+
+          const element = document.createElement("aside");
+          element.id = "site-banner";
+          element.setAttribute("role", "status");
+          element.innerHTML = `<span></span><a></a>`;
+          element.querySelector("span").textContent = banner.text;
+
+          const link = element.querySelector("a");
+          if (banner.odkaz) {
+            link.href = banner.odkaz;
+            link.textContent = banner.textOdkazu || "Více informací";
+          } else {
+            link.remove();
+          }
+
+          document.body.prepend(element);
+          const updateBannerHeight = () => {
+            document.documentElement.style.setProperty(
+              "--site-banner-height",
+              `${element.offsetHeight}px`,
+            );
+            document.documentElement.classList.add("has-site-banner");
+          };
+          requestAnimationFrame(updateBannerHeight);
+          window.addEventListener("resize", updateBannerHeight, { passive: true });
+        };
+
+        applyContactSettings();
+        renderSiteBanner();
+
+        // Ceník se načítá z přehledného souboru nastaveni.js.
+        const renderPricing = () => {
+          const data = siteSettings.cenik;
+          const list = document.getElementById("price-list");
+          const notes = document.getElementById("price-notes");
+          if (!data || !list) return;
+
+          const escapeHtml = (value) =>
+            String(value ?? "")
+              .replaceAll("&", "&amp;")
+              .replaceAll("<", "&lt;")
+              .replaceAll(">", "&gt;")
+              .replaceAll('"', "&quot;")
+              .replaceAll("'", "&#039;");
+
+          const checkIcon = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+              viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+              class="lucide lucide-check w-4 h-4 mt-0.5 shrink-0 text-primary"
+              aria-hidden="true">
+              <path d="M20 6 9 17l-5-5"></path>
+            </svg>`;
+
+          list.innerHTML = data.sluzby
+            .map((service) => {
+              const featured = Boolean(service.nejoblibenejsi);
+              const cardColors = featured
+                ? "bg-foreground text-background border-foreground"
+                : "bg-card border-border hover:border-primary/20";
+              const titleColor = featured ? "text-background" : "text-foreground";
+              const itemColor = featured ? "text-background/80" : "text-muted-foreground";
+              const unitColor = featured ? "text-background/60" : "text-muted-foreground";
+              const buttonColors = featured
+                ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                : "bg-foreground/5 text-foreground hover:bg-primary/10 hover:text-primary border border-border";
+              const priceSize = String(service.cena).length > 5 ? "text-3xl" : "text-6xl";
+              const badge = featured
+                ? `<div class="absolute -top-3 left-1/2 -translate-x-1/2">
+                    <span class="bg-primary text-primary-foreground px-4 py-1 text-xs font-display font-semibold tracking-widest rounded-full whitespace-nowrap flex items-center gap-1.5">
+                      <span>★</span> NEJOBLÍBENĚJŠÍ
+                    </span>
+                  </div>`
+                : "";
+              const items = (service.polozky || [])
+                .map(
+                  (item) => `<li class="flex items-start gap-3">
+                    ${checkIcon}
+                    <span class="font-body text-sm ${itemColor}">${escapeHtml(item)}</span>
+                  </li>`,
+                )
+                .join("");
+
+              return `<div class="relative p-8 pt-10 rounded-lg border transition-all duration-500 overflow-visible group ${cardColors}">
+                ${badge}
+                <div class="absolute inset-0 overflow-hidden pointer-events-none">
+                  <div class="absolute -top-1/2 -left-1/2 w-[1px] h-[200%] bg-primary/30 rotate-45 translate-x-[-200%] group-hover:translate-x-[400%] transition-transform duration-1000"></div>
+                </div>
+                <h3 class="font-body font-semibold text-base leading-snug min-h-[3.5rem] ${titleColor}">${escapeHtml(service.nazev)}</h3>
+                <div class="mt-6 flex items-baseline gap-1">
+                  <span class="font-display tracking-tight text-primary ${priceSize}">${escapeHtml(service.cena)}</span>
+                  ${service.jednotka ? `<span class="font-mono text-sm ${unitColor}">${escapeHtml(service.jednotka)}</span>` : ""}
+                </div>
+                <ul class="mt-8 space-y-3">${items}</ul>
+                <a href="mailto:dominik.keznikl@seznam.cz?subject=Objedn%C3%A1vka%20servisu"
+                  class="mt-8 block text-center py-3 rounded font-body text-sm font-semibold tracking-wider uppercase transition-all ${buttonColors}">Objednat</a>
+              </div>`;
+            })
+            .join("");
+
+          if (notes) {
+            notes.innerHTML = (data.poznamky || [])
+              .map(
+                (note) => `<div class="flex items-center gap-3 px-6 py-4 rounded-lg border border-primary/30 bg-primary/5">
+                  <span class="text-primary text-lg">◆</span>
+                  <p class="font-body text-sm font-medium text-foreground tracking-wide">${escapeHtml(note)}</p>
+                </div>`,
+              )
+              .join("");
+          }
+          applyContactSettings(list);
+        };
+        renderPricing();
+
+        const map = {
+          START: "hero",
+          ÚVOD: "hero",
+          "O NÁS": "about",
+          CENÍK: "pricing",
+          KONTAKT: "contact",
+        };
+        // Where to actually scroll when user clicks a nav item.
+        // Pricing starts with a big photo — jump to the "služby a ceny" heading instead.
+        const scrollTargets = {
+          hero: "hero",
+          about: "about",
+          pricing: "pricing-header",
+          contact: "contact",
+        };
+        const labels = {
+          hero: { name: "START", alt: "2847m" },
+          about: { name: "O NÁS", alt: "2100m" },
+          pricing: { name: "CENÍK", alt: "1400m" },
+          contact: { name: "KONTAKT", alt: "700m" },
+        };
+        const resolve = (txt) => {
+          const t = (txt || "")
+            .toUpperCase()
+            .replace(/^NAVIGATE TO /, "")
+            .trim();
+          return map[t];
+        };
+
+        // Click handler — scroll to section on button click (and close mobile menu)
+        document.addEventListener("click", (e) => {
+          const btn = e.target.closest("button");
+          if (!btn) return;
+          const id =
+            resolve(btn.getAttribute("aria-label")) || resolve(btn.innerText);
+          if (id) {
+            const targetId = scrollTargets[id] || id;
+            const el = document.getElementById(targetId);
+            if (el) {
+              e.preventDefault();
+              el.scrollIntoView({ behavior: "smooth", block: "start" });
+              closeMobileMenu();
+            }
+          }
+        });
+
+        // Mobile menu (hamburger). Inline styles only — Tailwind purges unused
+        // classes, so dynamically-generated class names don't work.
+        const hamburger = document.querySelector(
+          'button[aria-label="Open menu"]',
+        );
+        let mobileMenu = null;
+        const openMobileMenu = () => {
+          if (mobileMenu) return;
+          mobileMenu = document.createElement("div");
+          mobileMenu.setAttribute("role", "dialog");
+          mobileMenu.style.cssText =
+            "position:fixed;inset:0;z-index:9999;background:hsl(var(--background));display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2rem;font-family:inherit;";
+          mobileMenu.innerHTML = `
+            <button data-mm-close aria-label="Close menu" style="position:absolute;top:1rem;right:1rem;width:48px;height:48px;display:flex;align-items:center;justify-content:center;background:transparent;border:none;color:inherit;cursor:pointer;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <button aria-label="Navigate to O NÁS" style="background:transparent;border:none;color:inherit;font-size:2rem;letter-spacing:0.05em;text-transform:uppercase;cursor:pointer;font-family:inherit;">O nás</button>
+            <button aria-label="Navigate to CENÍK" style="background:transparent;border:none;color:inherit;font-size:2rem;letter-spacing:0.05em;text-transform:uppercase;cursor:pointer;font-family:inherit;">Ceník</button>
+            <button aria-label="Navigate to KONTAKT" style="background:transparent;border:none;color:inherit;font-size:2rem;letter-spacing:0.05em;text-transform:uppercase;cursor:pointer;font-family:inherit;">Kontakt</button>
+            <a href="mailto:dominik.keznikl@seznam.cz?subject=Objedn%C3%A1vka%20servisu" style="margin-top:1rem;padding:1rem 2rem;background:hsl(var(--primary));color:hsl(var(--primary-foreground));font-weight:600;letter-spacing:0.1em;text-transform:uppercase;text-decoration:none;border-radius:0.375rem;font-family:inherit;">Objednat</a>
+          `;
+          document.body.appendChild(mobileMenu);
+          applyContactSettings(mobileMenu);
+          document.body.style.overflow = "hidden";
+          mobileMenu
+            .querySelector("[data-mm-close]")
+            .addEventListener("click", closeMobileMenu);
+        };
+        const closeMobileMenu = () => {
+          if (!mobileMenu) return;
+          mobileMenu.remove();
+          mobileMenu = null;
+          document.body.style.overflow = "";
+        };
+        if (hamburger) {
+          hamburger.addEventListener("click", (ev) => {
+            ev.preventDefault();
+            ev.stopPropagation();
+            openMobileMenu();
+          });
+        }
+        // Close on Escape
+        document.addEventListener("keydown", (ev) => {
+          if (ev.key === "Escape") closeMobileMenu();
+        });
+
+        // Build map of side-nav buttons by section id
+        const sideButtons = {};
+        document
+          .querySelectorAll('button[aria-label^="Navigate to"]')
+          .forEach((b) => {
+            const id = resolve(b.getAttribute("aria-label"));
+            if (id) sideButtons[id] = b;
+          });
+
+        const activate = (id) => {
+          for (const [k, btn] of Object.entries(sideButtons)) {
+            const isActive = k === id;
+            btn.setAttribute("aria-current", isActive ? "true" : "false");
+            const children = btn.querySelectorAll(":scope > div");
+            const dot = children[0];
+            if (dot) {
+              dot.className = isActive
+                ? "w-2.5 h-2.5 rounded-full border-2 transition-colors duration-300 bg-primary border-primary"
+                : "w-2.5 h-2.5 rounded-full border-2 transition-colors duration-300 bg-transparent border-foreground/20 group-hover:border-primary/60";
+            }
+            // Remove any existing label divs after the dot (the original HTML
+            // bakes a label into the START button — kill it on every update so
+            // we control which button shows the label).
+            for (let i = 1; i < children.length; i++) children[i].remove();
+            if (isActive && labels[k]) {
+              const label = document.createElement("div");
+              label.className =
+                "scroll-spy-label absolute right-10 flex items-center gap-2 whitespace-nowrap";
+              label.innerHTML = `<span class="font-mono text-xs text-primary/60">${labels[k].alt}</span><span class="font-display text-xs tracking-widest text-foreground/80">${labels[k].name}</span>`;
+              btn.appendChild(label);
+            }
+          }
+        };
+
+        // Scroll-spy via direct scroll position check (more reliable than IntersectionObserver)
+        const sectionIds = Object.keys(labels);
+        const progressBar = document.querySelector(
+          'nav[aria-label="Section navigation"] > div:nth-of-type(2)',
+        );
+        const header = document.querySelector("header");
+        const updateActive = () => {
+          // The section whose top is closest above the viewport's 1/3 line is the active one
+          const triggerLine = window.scrollY + window.innerHeight * 0.33;
+          let active = sectionIds[0];
+          for (const id of sectionIds) {
+            const el = document.getElementById(id);
+            if (el && el.offsetTop <= triggerLine) active = id;
+          }
+          activate(active);
+          // Progress bar
+          if (progressBar) {
+            const total =
+              document.documentElement.scrollHeight - window.innerHeight;
+            const pct =
+              total > 0 ? Math.min(100, (window.scrollY / total) * 100) : 0;
+            progressBar.style.height = pct + "%";
+          }
+          // Header gets opaque background once scrolled past hero
+          if (header) {
+            if (window.scrollY > 50) {
+              header.style.background = "hsl(var(--background) / 0.85)";
+              header.style.backdropFilter = "blur(8px)";
+              header.style.borderBottom = "1px solid hsl(var(--border))";
+            } else {
+              header.style.background = "";
+              header.style.backdropFilter = "";
+              header.style.borderBottom = "";
+            }
+          }
+        };
+        window.addEventListener("scroll", updateActive, { passive: true });
+        window.addEventListener("resize", updateActive);
+        updateActive();
+
+        // Simple fade-in animations on scroll for any element that had opacity:0 originally
+        // (we cleared those at render — re-add a subtle fade-in for sections coming into view)
+        const fadeObserver = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((e) => {
+              if (e.isIntersecting) {
+                e.target.style.transition =
+                  "opacity 0.7s ease, transform 0.7s ease";
+                e.target.style.opacity = "1";
+                e.target.style.transform = "none";
+                fadeObserver.unobserve(e.target);
+              }
+            });
+          },
+          { threshold: 0.1 },
+        );
+        document
+          .querySelectorAll(
+            "section h2, section h3, section p, section .grid > div, section .group",
+          )
+          .forEach((el) => {
+            el.style.opacity = "0";
+            el.style.transform = "translateY(20px)";
+            fadeObserver.observe(el);
+          });
+      });
+    </script>
+  </head>
+  <body>
+    <div id="root">
+      <div class="min-h-screen bg-background font-body">
+        <header
+          class="fixed top-0 left-0 right-0 z-50 transition-all duration-500 bg-transparent"
+        >
+          <div
+            class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between"
+          >
+            <button class="flex items-center gap-3 group">
+              <div
+                class="w-9 h-9 rounded-full overflow-hidden border border-primary/30 flex items-center justify-center"
+              >
+                <img
+                  src="assets/97aa8aedd_logo.jpg"
+                  alt="Ski Servis Keznikl logo"
+                  class="w-full h-full object-cover"
+                  style="object-position: 50% 30%"
+                />
+              </div>
+              <div class="hidden sm:block">
+                <p
+                  class="font-display text-xs tracking-[0.3em] text-foreground/70 leading-none"
+                >
+                  SKI SERVIS
+                </p>
+                <p
+                  class="font-display text-sm tracking-[0.2em] text-primary leading-none mt-0.5"
+                >
+                  KEZNIKL
+                </p>
+              </div>
+            </button>
+            <nav class="hidden md:flex items-center gap-8">
+              <button
+                class="font-body text-sm tracking-wider text-foreground/60 hover:text-foreground transition-colors uppercase"
+              >
+                O nás</button
+              ><button
+                class="font-body text-sm tracking-wider text-foreground/60 hover:text-foreground transition-colors uppercase"
+              >
+                Ceník</button
+              ><button
+                class="font-body text-sm tracking-wider text-foreground/60 hover:text-foreground transition-colors uppercase"
+              >
+                Kontakt</button
+              ><a
+                href="mailto:dominik.keznikl@seznam.cz?subject=Objednávka%20servisu"
+                class="px-5 py-2 bg-primary text-primary-foreground font-body text-sm font-semibold tracking-wider uppercase rounded hover:bg-primary/90 transition-colors"
+                >Objednat</a
+              >
+            </nav>
+            <button
+              class="md:hidden min-w-[44px] min-h-[44px] flex items-center justify-center text-foreground"
+              aria-label="Open menu"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="lucide lucide-menu w-6 h-6"
+              >
+                <line x1="4" x2="20" y1="12" y2="12"></line>
+                <line x1="4" x2="20" y1="6" y2="6"></line>
+                <line x1="4" x2="20" y1="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+        </header>
+        <nav
+          class="fixed right-4 top-1/2 -translate-y-1/2 z-50 hidden lg:flex flex-col items-center gap-1"
+          role="navigation"
+          aria-label="Section navigation"
+        >
+          <div
+            class="absolute left-1/2 -translate-x-1/2 top-0 bottom-0 w-px bg-foreground/10"
+          ></div>
+          <div
+            class="absolute left-1/2 -translate-x-1/2 top-0 w-px bg-primary origin-top"
+            style="height: 0%"
+          ></div>
+          <button
+            class="relative group flex items-center min-w-[44px] min-h-[44px] justify-center"
+            aria-label="Navigate to START"
+            aria-current="true"
+          >
+            <div
+              class="w-2.5 h-2.5 rounded-full border-2 transition-colors duration-300 bg-primary border-primary"
+            ></div>
+            <div
+              class="absolute right-10 flex items-center gap-2 whitespace-nowrap"
+              style="opacity: 1"
+            >
+              <span class="font-mono text-xs text-primary/60">2847m</span
+              ><span
+                class="font-display text-xs tracking-widest text-foreground/80"
+                >START</span
+              >
+            </div></button
+          ><button
+            class="relative group flex items-center min-w-[44px] min-h-[44px] justify-center"
+            aria-label="Navigate to O NÁS"
+          >
+            <div
+              class="w-2.5 h-2.5 rounded-full border-2 transition-colors duration-300 bg-transparent border-foreground/20 group-hover:border-primary/60"
+            ></div></button
+          ><button
+            class="relative group flex items-center min-w-[44px] min-h-[44px] justify-center"
+            aria-label="Navigate to CENÍK"
+          >
+            <div
+              class="w-2.5 h-2.5 rounded-full border-2 transition-colors duration-300 bg-transparent border-foreground/20 group-hover:border-primary/60"
+            ></div></button
+          ><button
+            class="relative group flex items-center min-w-[44px] min-h-[44px] justify-center"
+            aria-label="Navigate to KONTAKT"
+          >
+            <div
+              class="w-2.5 h-2.5 rounded-full border-2 transition-colors duration-300 bg-transparent border-foreground/20 group-hover:border-primary/60"
+            ></div>
+          </button>
+        </nav>
+        <section
+          id="hero"
+          class="relative min-h-screen flex items-center justify-center overflow-hidden"
+        >
+          <div class="absolute inset-0">
+            <img
+              src="assets/522a620b6_generated_bb547c55.png"
+              alt="Závodní lyžař na sjezdovce"
+              class="w-full h-[120%] object-cover"
+            />
+            <div
+              class="absolute inset-0 bg-gradient-to-b from-background/70 via-background/40 to-background"
+            ></div>
+            <div class="absolute inset-0 overflow-hidden pointer-events-none">
+              <div
+                class="absolute top-0 right-0 w-px h-[200%] bg-primary/10 origin-top-right rotate-[25deg]"
+              ></div>
+              <div
+                class="absolute top-0 left-1/3 w-px h-[200%] bg-primary/5 origin-top rotate-[15deg]"
+              ></div>
+            </div>
+          </div>
+          <div
+            class="relative z-10 max-w-6xl mx-auto px-6 text-center"
+            style="opacity: 1"
+          >
+            <div class="flex justify-center mb-8" style="opacity: 1">
+              <div class="flex flex-col items-center">
+                <div
+                  class="w-40 h-40 rounded-full bg-white overflow-hidden shadow-2xl shadow-primary/20 border-2 border-primary/20 flex items-center justify-center"
+                >
+                  <img
+                    src="assets/97aa8aedd_logo.jpg"
+                    alt="Ski Servis Keznikl logo"
+                    class="w-full h-full object-contain bg-white"
+                    style="padding: 4px"
+                  />
+                </div>
+                <div class="mt-6">
+                  <p
+                    class="font-display text-xs tracking-[0.4em] text-foreground/60"
+                  >
+                    SKI SERVIS
+                  </p>
+                  <p class="font-display text-sm tracking-[0.3em] text-primary">
+                    KEZNIKL
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="mb-8" style="opacity: 1">
+              <span
+                class="inline-block px-5 py-2 rounded-full border border-primary/30 bg-primary/5 text-primary font-mono text-xs tracking-widest uppercase"
+                >Brno &amp; Okolí</span
+              >
+            </div>
+            <h1
+              class="font-display text-6xl sm:text-7xl md:text-8xl lg:text-[10rem] leading-[0.85] tracking-tight"
+              style="opacity: 1"
+            >
+              <span class="text-foreground block">Ski Servis</span
+              ><span class="text-foreground block">Keznikl</span>
+            </h1>
+            <p
+              class="mt-8 max-w-2xl mx-auto text-lg sm:text-xl font-body text-muted-foreground leading-relaxed"
+              style="opacity: 1"
+            >
+              Dlouholeté závodní zkušenosti a stovky hodin příprav zužitkuji do
+              maximální péče o vaše lyže či snowboard.
+            </p>
+            <div
+              class="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4"
+              style="opacity: 1"
+            >
+              <a
+                href="mailto:dominik.keznikl@seznam.cz?subject=Objednávka%20servisu"
+                class="group relative inline-flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground font-body font-semibold text-sm tracking-wider uppercase rounded overflow-hidden transition-all hover:shadow-lg hover:shadow-primary/30 hover:scale-105"
+                ><span class="relative z-10">Objednat servis</span>
+                <div
+                  class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"
+                ></div></a
+              ><a
+                href="tel:+420737837157"
+                class="inline-flex items-center gap-2 px-8 py-4 border border-foreground/20 text-foreground font-mono text-sm tracking-wider rounded hover:border-primary/40 hover:text-primary transition-colors"
+                >+420 737 837 157</a
+              >
+            </div>
+          </div>
+          <div
+            class="absolute bottom-8 left-1/2 -translate-x-1/2"
+            style="opacity: 1"
+          >
+            <div>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="lucide lucide-chevron-down w-6 h-6 text-foreground/30"
+              >
+                <path d="m6 9 6 6 6-6"></path>
+              </svg>
+            </div>
+          </div>
+          <div class="absolute bottom-8 left-6 hidden lg:block">
+            <p class="font-mono text-xs text-foreground/20 tracking-wider">
+              ALT: 2847m
+            </p>
+            <p class="font-mono text-xs text-foreground/20 tracking-wider">
+              LAT: 49.1951°N
+            </p>
+          </div>
+        </section>
+        <section id="about" class="relative py-24 sm:py-32 overflow-hidden">
+          <div class="absolute inset-0 pointer-events-none overflow-hidden">
+            <div
+              class="absolute -top-20 left-0 w-px h-[140%] bg-primary/5 rotate-[8deg]"
+            ></div>
+            <div
+            <div
+              class="absolute -top-20 right-1/4 w-px h-[140%] bg-primary/5 rotate-[-5deg]"
+            ></div>
+          </div>
+          <div class="max-w-6xl mx-auto px-6">
+            <div class="text-center mb-20" style="opacity: 1">
+              <span
+                class="font-mono text-xs tracking-[0.4em] text-primary uppercase"
+                >// O nás</span
+              >
+              <h2
+                class="mt-4 font-display text-5xl sm:text-6xl md:text-7xl text-foreground tracking-tight leading-[0.9]"
+              >
+                Kvalitní servis pro<br /><span
+                  class="text-[hsl(var(--popover-foreground))]"
+                  >vaše lyže</span
+                >
+              </h2>
+              <p
+                class="mt-6 max-w-xl mx-auto text-lg text-muted-foreground font-body leading-relaxed"
+              >
+                Zakládáme si na rychlosti, preciznosti a individuálním přístupu.
+              </p>
+            </div>
+            <div class="grid md:grid-cols-3 gap-6">
+              <div
+                class="group relative p-8 rounded-lg bg-card border border-border hover:border-primary/30 transition-all duration-500 overflow-hidden"
+                style="transform-origin: center bottom; opacity: 1"
+              >
+                <div
+                  class="absolute inset-0 overflow-hidden pointer-events-none"
+                >
+                  <div
+                    class="absolute -top-full -left-full w-[200%] h-[200%] bg-gradient-to-br from-transparent via-primary/5 to-transparent translate-x-[-100%] translate-y-[-100%] group-hover:translate-x-[100%] group-hover:translate-y-[100%] transition-transform duration-1000"
+                  ></div>
+                </div>
+                <div class="relative">
+                  <div
+                    class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary/20 transition-colors"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="lucide lucide-zap w-6 h-6 text-primary"
+                    >
+                      <path
+                        d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"
+                      ></path>
+                    </svg>
+                  </div>
+                  <h3
+                    class="font-display text-2xl text-foreground tracking-tight mb-3"
+                  >
+                    Rychlost
+                  </h3>
+                  <p
+                    class="font-body text-muted-foreground text-sm leading-relaxed mb-6"
+                  >
+                    Vaše lyže připravíme v co nejkratším čase, abyste nepřišli o
+                    jedinou chvíli na svahu.
+                  </p>
+                  <div class="pt-4 border-t border-border/50">
+                    <span class="font-mono text-2xl text-primary">24h</span
+                    ><span
+                      class="font-mono text-xs text-muted-foreground ml-2 tracking-wider"
+                      >turnaround</span
+                    >
+                  </div>
+                </div>
+              </div>
+              <div
+                class="group relative p-8 rounded-lg bg-card border border-border hover:border-primary/30 transition-all duration-500 overflow-hidden"
+                style="transform-origin: center bottom; opacity: 1"
+              >
+                <div
+                  class="absolute inset-0 overflow-hidden pointer-events-none"
+                >
+                  <div
+                    class="absolute -top-full -left-full w-[200%] h-[200%] bg-gradient-to-br from-transparent via-primary/5 to-transparent translate-x-[-100%] translate-y-[-100%] group-hover:translate-x-[100%] group-hover:translate-y-[100%] transition-transform duration-1000"
+                  ></div>
+                </div>
+                <div class="relative">
+                  <div
+                    class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary/20 transition-colors"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="lucide lucide-target w-6 h-6 text-primary"
+                    >
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <circle cx="12" cy="12" r="6"></circle>
+                      <circle cx="12" cy="12" r="2"></circle>
+                    </svg>
+                  </div>
+                  <h3
+                    class="font-display text-2xl text-foreground tracking-tight mb-3"
+                  >
+                    Preciznost
+                  </h3>
+                  <p
+                    class="font-body text-muted-foreground text-sm leading-relaxed mb-6"
+                  >
+                    Každý pár lyží připravujeme s maximální pozorností k detailu
+                    a profesionálním vybavením.
+                  </p>
+                  <div class="pt-4 border-t border-border/50">
+                    <span class="font-mono text-2xl text-primary">0.5°</span
+                    ><span
+                      class="font-mono text-xs text-muted-foreground ml-2 tracking-wider"
+                      >přesnost hran</span
+                    >
+                  </div>
+                </div>
+              </div>
+              <div
+                class="group relative p-8 rounded-lg bg-card border border-border hover:border-primary/30 transition-all duration-500 overflow-hidden"
+                style="transform-origin: center bottom; opacity: 1"
+              >
+                <div
+                  class="absolute inset-0 overflow-hidden pointer-events-none"
+                >
+                  <div
+                    class="absolute -top-full -left-full w-[200%] h-[200%] bg-gradient-to-br from-transparent via-primary/5 to-transparent translate-x-[-100%] translate-y-[-100%] group-hover:translate-x-[100%] group-hover:translate-y-[100%] transition-transform duration-1000"
+                  ></div>
+                </div>
+                <div class="relative">
+                  <div
+                    class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary/20 transition-colors"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="lucide lucide-award w-6 h-6 text-primary"
+                    >
+                      <path
+                        d="m15.477 12.89 1.515 8.526a.5.5 0 0 1-.81.47l-3.58-2.687a1 1 0 0 0-1.197 0l-3.586 2.686a.5.5 0 0 1-.81-.469l1.514-8.526"
+                      ></path>
+                      <circle cx="12" cy="8" r="6"></circle>
+                    </svg>
+                  </div>
+                  <h3
+                    class="font-display text-2xl text-foreground tracking-tight mb-3"
+                  >
+                    Zkušenosti
+                  </h3>
+                  <p
+                    class="font-body text-muted-foreground text-sm leading-relaxed mb-6"
+                  >
+                    Dlouholeté závodní zkušenosti nám umožňují připravit lyže na
+                    nejvyšší úrovni.
+                  </p>
+                  <div class="pt-4 border-t border-border/50">
+                    <span class="font-mono text-2xl text-primary">10+</span
+                    ><span
+                      class="font-mono text-xs text-muted-foreground ml-2 tracking-wider"
+                      >let praxe</span
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section id="pricing" class="relative py-24 sm:py-32">
+          <div class="absolute inset-0">
+            <img
+              src="assets/14d6ca474_generated_image.png"
+              alt=""
+              class="w-full h-full object-cover opacity-10"
+            />
+            <div class="absolute inset-0 bg-background/90"></div>
+          </div>
+          <div class="relative max-w-6xl mx-auto px-6">
+            <div
+              class="mb-20 rounded-lg overflow-hidden border border-border relative group"
+              style="opacity: 1"
+            >
+              <img
+                src="assets/45c43f737_IMG_0981.jpg"
+                alt="Závodní lyžař"
+                class="w-full h-auto block group-hover:scale-105 transition-transform duration-700"
+              />
+              <div class="absolute inset-0 overflow-hidden pointer-events-none">
+                <div
+                  class="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-primary/0 via-primary/10 to-primary/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                ></div>
+                <div
+                  class="absolute -top-1/2 -left-1/2 w-[1px] h-[200%] bg-primary/40 rotate-45 translate-x-[-200%] group-hover:translate-x-[400%] transition-transform duration-1000"
+                ></div>
+              </div>
+            </div>
+            <div id="pricing-header"></div>
+            <div class="text-center mb-16" style="opacity: 1">
+              <span
+                class="font-mono text-xs tracking-[0.4em] text-primary uppercase"
+                >// Ceník</span
+              >
+              <h2
+                class="mt-4 font-display text-5xl sm:text-6xl md:text-7xl text-foreground tracking-tight"
+              >
+                služby a ceny
+              </h2>
+            </div>
+            <div id="price-list" class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div
+                class="relative p-8 pt-10 rounded-lg border transition-all duration-500 overflow-visible group bg-card border-border hover:border-primary/20"
+                style="opacity: 1"
+              >
+                <div
+                  class="absolute inset-0 overflow-hidden pointer-events-none"
+                >
+                  <div
+                    class="absolute -top-1/2 -left-1/2 w-[1px] h-[200%] bg-primary/30 rotate-45 translate-x-[-200%] group-hover:translate-x-[400%] transition-transform duration-1000"
+                  ></div>
+                </div>
+                <h3
+                  class="font-body font-semibold text-base leading-snug min-h-[3.5rem] text-foreground"
+                >
+                  Broušení hran / Voskování a leštění skluznice
+                </h3>
+                <div class="mt-6 flex items-baseline gap-1">
+                  <span
+                    class="font-display tracking-tight text-primary text-6xl"
+                    style="opacity: 1"
+                    >349</span
+                  ><span class="font-mono text-sm text-muted-foreground"
+                    >Kč</span
+                  >
+                </div>
+                <ul class="mt-8 space-y-3">
+                  <li class="flex items-start gap-3" style="opacity: 1">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="lucide lucide-check w-4 h-4 mt-0.5 shrink-0 text-primary"
+                    >
+                      <path d="M20 6 9 17l-5-5"></path></svg
+                    ><span class="font-body text-sm text-muted-foreground"
+                      >Broušení hran NEBO voskování</span
+                    >
+                  </li>
+                  <li class="flex items-start gap-3" style="opacity: 1">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="lucide lucide-check w-4 h-4 mt-0.5 shrink-0 text-primary"
+                    >
+                      <path d="M20 6 9 17l-5-5"></path></svg
+                    ><span class="font-body text-sm text-muted-foreground"
+                      >Leštění skluznice</span
+                    >
+                  </li>
+                  <li class="flex items-start gap-3" style="opacity: 1">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="lucide lucide-check w-4 h-4 mt-0.5 shrink-0 text-primary"
+                    >
+                      <path d="M20 6 9 17l-5-5"></path></svg
+                    ><span class="font-body text-sm text-muted-foreground"
+                      >Vizuální kontrola lyží</span
+                    >
+                  </li>
+                </ul>
+                <a
+                  href="mailto:dominik.keznikl@seznam.cz?subject=Objednávka%20servisu"
+                  class="mt-8 block text-center py-3 rounded font-body text-sm font-semibold tracking-wider uppercase transition-all bg-foreground/5 text-foreground hover:bg-primary/10 hover:text-primary border border-border"
+                  >Objednat</a
+                >
+              </div>
+              <div
+                class="relative p-8 pt-10 rounded-lg border transition-all duration-500 overflow-visible group bg-foreground text-background border-foreground"
+                style="opacity: 1"
+              >
+                <div class="absolute -top-3 left-1/2 -translate-x-1/2">
+                  <span
+                    class="bg-primary text-primary-foreground px-4 py-1 text-xs font-display font-semibold tracking-widest rounded-full whitespace-nowrap flex items-center gap-1.5"
+                    ><span>★</span> NEJOBLÍBENĚJŠÍ</span
+                  >
+                </div>
+                <div
+                  class="absolute inset-0 overflow-hidden pointer-events-none"
+                >
+                  <div
+                    class="absolute -top-1/2 -left-1/2 w-[1px] h-[200%] bg-primary/30 rotate-45 translate-x-[-200%] group-hover:translate-x-[400%] transition-transform duration-1000"
+                  ></div>
+                </div>
+                <h3
+                  class="font-body font-semibold text-base leading-snug min-h-[3.5rem] text-background"
+                >
+                  Broušení hran + Voskování a leštění skluznice
+                </h3>
+                <div class="mt-6 flex items-baseline gap-1">
+                  <span
+                    class="font-display tracking-tight text-primary text-6xl"
+                    style="opacity: 1"
+                    >549</span
+                  ><span class="font-mono text-sm text-background/60">Kč</span>
+                </div>
+                <ul class="mt-8 space-y-3">
+                  <li class="flex items-start gap-3" style="opacity: 1">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="lucide lucide-check w-4 h-4 mt-0.5 shrink-0 text-primary"
+                    >
+                      <path d="M20 6 9 17l-5-5"></path></svg
+                    ><span class="font-body text-sm text-background/80"
+                      >Broušení hran</span
+                    >
+                  </li>
+                  <li class="flex items-start gap-3" style="opacity: 1">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="lucide lucide-check w-4 h-4 mt-0.5 shrink-0 text-primary"
+                    >
+                      <path d="M20 6 9 17l-5-5"></path></svg
+                    ><span class="font-body text-sm text-background/80"
+                      >Voskování skluznice</span
+                    >
+                  </li>
+                  <li class="flex items-start gap-3" style="opacity: 1">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="lucide lucide-check w-4 h-4 mt-0.5 shrink-0 text-primary"
+                    >
+                      <path d="M20 6 9 17l-5-5"></path></svg
+                    ><span class="font-body text-sm text-background/80"
+                      >Leštění skluznice</span
+                    >
+                  </li>
+                  <li class="flex items-start gap-3" style="opacity: 1">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="lucide lucide-check w-4 h-4 mt-0.5 shrink-0 text-primary"
+                    >
+                      <path d="M20 6 9 17l-5-5"></path></svg
+                    ><span class="font-body text-sm text-background/80"
+                      >Kompletní péče</span
+                    >
+                  </li>
+                </ul>
+                <a
+                  href="mailto:dominik.keznikl@seznam.cz?subject=Objednávka%20servisu"
+                  class="mt-8 block text-center py-3 rounded font-body text-sm font-semibold tracking-wider uppercase transition-all bg-primary text-primary-foreground hover:bg-primary/90"
+                  >Objednat</a
+                >
+              </div>
+              <div
+                class="relative p-8 pt-10 rounded-lg border transition-all duration-500 overflow-visible group bg-card border-border hover:border-primary/20"
+                style="opacity: 1"
+              >
+                <div
+                  class="absolute inset-0 overflow-hidden pointer-events-none"
+                >
+                  <div
+                    class="absolute -top-1/2 -left-1/2 w-[1px] h-[200%] bg-primary/30 rotate-45 translate-x-[-200%] group-hover:translate-x-[400%] transition-transform duration-1000"
+                  ></div>
+                </div>
+                <h3
+                  class="font-body font-semibold text-base leading-snug min-h-[3.5rem] text-foreground"
+                >
+                  Závodní servis
+                </h3>
+                <div class="mt-6 flex items-baseline gap-1">
+                  <span
+                    class="font-display tracking-tight text-primary text-6xl"
+                    style="opacity: 1"
+                    >649</span
+                  ><span class="font-mono text-sm text-muted-foreground"
+                    >Kč</span
+                  >
+                </div>
+                <ul class="mt-8 space-y-3">
+                  <li class="flex items-start gap-3" style="opacity: 1">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="lucide lucide-check w-4 h-4 mt-0.5 shrink-0 text-primary"
+                    >
+                      <path d="M20 6 9 17l-5-5"></path></svg
+                    ><span class="font-body text-sm text-muted-foreground"
+                      >Profesionální broušení hran</span
+                    >
+                  </li>
+                  <li class="flex items-start gap-3" style="opacity: 1">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="lucide lucide-check w-4 h-4 mt-0.5 shrink-0 text-primary"
+                    >
+                      <path d="M20 6 9 17l-5-5"></path></svg
+                    ><span class="font-body text-sm text-muted-foreground"
+                      >Závodní voskování</span
+                    >
+                  </li>
+                  <li class="flex items-start gap-3" style="opacity: 1">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="lucide lucide-check w-4 h-4 mt-0.5 shrink-0 text-primary"
+                    >
+                      <path d="M20 6 9 17l-5-5"></path></svg
+                    ><span class="font-body text-sm text-muted-foreground"
+                      >Maximální výkon na svahu</span
+                    >
+                  </li>
+                </ul>
+                <a
+                  href="mailto:dominik.keznikl@seznam.cz?subject=Objednávka%20servisu"
+                  class="mt-8 block text-center py-3 rounded font-body text-sm font-semibold tracking-wider uppercase transition-all bg-foreground/5 text-foreground hover:bg-primary/10 hover:text-primary border border-border"
+                  >Objednat</a
+                >
+              </div>
+              <div
+                class="relative p-8 pt-10 rounded-lg border transition-all duration-500 overflow-visible group bg-card border-border hover:border-primary/20"
+                style="opacity: 1"
+              >
+                <div
+                  class="absolute inset-0 overflow-hidden pointer-events-none"
+                >
+                  <div
+                    class="absolute -top-1/2 -left-1/2 w-[1px] h-[200%] bg-primary/30 rotate-45 translate-x-[-200%] group-hover:translate-x-[400%] transition-transform duration-1000"
+                  ></div>
+                </div>
+                <h3
+                  class="font-body font-semibold text-base leading-snug min-h-[3.5rem] text-foreground"
+                >
+                  Vyzvednutí/Odvoz lyží až domů po Brně
+                </h3>
+                <div class="mt-6 flex items-baseline gap-1">
+                  <span
+                    class="font-display tracking-tight text-primary text-3xl"
+                    style="opacity: 1"
+                    >Individuální</span
+                  >
+                </div>
+                <ul class="mt-8 space-y-3">
+                  <li class="flex items-start gap-3" style="opacity: 1">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="lucide lucide-check w-4 h-4 mt-0.5 shrink-0 text-primary"
+                    >
+                      <path d="M20 6 9 17l-5-5"></path></svg
+                    ><span class="font-body text-sm text-muted-foreground"
+                      >1 cesta po Brně (odvoz NEBO vyzvednutí) + 100 Kč</span
+                    >
+                  </li>
+                  <li class="flex items-start gap-3" style="opacity: 1">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="lucide lucide-check w-4 h-4 mt-0.5 shrink-0 text-primary"
+                    >
+                      <path d="M20 6 9 17l-5-5"></path></svg
+                    ><span class="font-body text-sm text-muted-foreground"
+                      >2 cesty po Brně (odvoz a vyzvednutí) + 200 Kč</span
+                    >
+                  </li>
+                  <li class="flex items-start gap-3" style="opacity: 1">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="lucide lucide-check w-4 h-4 mt-0.5 shrink-0 text-primary"
+                    >
+                      <path d="M20 6 9 17l-5-5"></path></svg
+                    ><span class="font-body text-sm text-muted-foreground"
+                      >Cesta mimo Brno po domluvě</span
+                    >
+                  </li>
+                </ul>
+                <a
+                  href="mailto:dominik.keznikl@seznam.cz?subject=Objednávka%20servisu"
+                  class="mt-8 block text-center py-3 rounded font-body text-sm font-semibold tracking-wider uppercase transition-all bg-foreground/5 text-foreground hover:bg-primary/10 hover:text-primary border border-border"
+                  >Objednat</a
+                >
+              </div>
+            </div>
+            <div
+              id="price-notes"
+              class="mt-10 flex flex-wrap justify-center gap-4"
+              style="opacity: 1"
+            >
+              <div
+                class="flex items-center gap-3 px-6 py-4 rounded-lg border border-primary/30 bg-primary/5"
+              >
+                <span class="text-primary text-lg">◆</span>
+                <p
+                  class="font-body text-sm font-medium text-foreground tracking-wide"
+                >
+                  Seřízení vázání po domluvě
+                </p>
+              </div>
+              <div
+                class="flex items-center gap-3 px-6 py-4 rounded-lg border border-primary/30 bg-primary/5"
+              >
+                <span class="text-primary text-lg">◆</span>
+                <p
+                  class="font-body text-sm font-medium text-foreground tracking-wide"
+                >
+                  Více párů / lyže do 130 cm = sleva
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section id="contact" class="relative py-24 sm:py-32">
+          <div class="absolute inset-0 pointer-events-none overflow-hidden">
+            <div
+              class="absolute top-0 right-0 w-1/3 h-full bg-primary/3 -skew-x-12 origin-top-right"
+            ></div>
+          </div>
+          <div class="relative max-w-6xl mx-auto px-6">
+            <div class="text-center mb-16" style="opacity: 1">
+              <span
+                class="font-mono text-xs tracking-[0.4em] text-primary uppercase"
+                >// Kontakt</span
+              >
+              <h2
+                class="mt-4 font-display text-5xl sm:text-6xl md:text-7xl text-foreground tracking-tight"
+              >
+                Ozvěte se nám
+              </h2>
+              <p
+                class="mt-6 max-w-xl mx-auto text-lg text-muted-foreground font-body leading-relaxed"
+              >
+                Připravíme vaše lyže na perfektní výkon. Kontaktujte nás a
+                domluvíme se na termínu.
+              </p>
+            </div>
+            <div class="grid lg:grid-cols-2 gap-12">
+              <div class="space-y-6" style="opacity: 1">
+                <a
+                  href="mailto:dominik.keznikl@seznam.cz?subject=Objednávka%20servisu"
+                  class="group flex items-start gap-5 p-6 rounded-lg border border-border hover:border-primary/30 bg-card transition-all duration-300"
+                  ><div
+                    class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="lucide lucide-mail w-5 h-5 text-primary"
+                    >
+                      <rect width="20" height="16" x="2" y="4" rx="2"></rect>
+                      <path
+                        d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"
+                      ></path>
+                    </svg>
+                  </div>
+                  <div>
+                    <p
+                      class="font-display text-sm text-foreground/60 tracking-wider uppercase mb-1"
+                    >
+                      E-mail
+                    </p>
+                    <p class="font-body text-foreground text-lg">
+                      dominik.keznikl@seznam.cz
+                    </p>
+                  </div></a
+                ><a
+                  href="tel:+420737837157"
+                  class="group flex items-start gap-5 p-6 rounded-lg border border-border hover:border-primary/30 bg-card transition-all duration-300"
+                  ><div
+                    class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="lucide lucide-phone w-5 h-5 text-primary"
+                    >
+                      <path
+                        d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"
+                      ></path>
+                    </svg>
+                  </div>
+                  <div>
+                    <p
+                      class="font-display text-sm text-foreground/60 tracking-wider uppercase mb-1"
+                    >
+                      Telefon
+                    </p>
+                    <p class="font-mono text-foreground text-lg">
+                      +420 737 837 157
+                    </p>
+                  </div></a
+                >
+                <div
+                  class="flex items-start gap-5 p-6 rounded-lg border border-border bg-card"
+                >
+                  <div
+                    class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center shrink-0"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="lucide lucide-map-pin w-5 h-5 text-primary"
+                    >
+                      <path
+                        d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"
+                      ></path>
+                      <circle cx="12" cy="10" r="3"></circle>
+                    </svg>
+                  </div>
+                  <div>
+                    <p
+                      class="font-display text-sm text-foreground/60 tracking-wider uppercase mb-1"
+                    >
+                      Lokalita
+                    </p>
+                    <p class="font-body text-foreground text-lg" data-contact-location>
+                      Brno a okolí
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div class="space-y-5">
+                <p style="font-family: inherit; margin: 0 0 1rem 0">
+                  Pro zaslání dotazu klikněte na tlačítko níže — otevře se váš
+                  e-mailový klient s předvyplněným adresátem.
+                </p>
+                <a
+                  href="mailto:dominik.keznikl@seznam.cz?subject=Dotaz%20Ski%20Servis%20Keznikl"
+                  style="
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    padding: 0.75rem 1.5rem;
+                    background: #06b6d4;
+                    color: #000;
+                    font-weight: 600;
+                    text-decoration: none;
+                    border-radius: 0.375rem;
+                    font-family: inherit;
+                  "
+                >
+                  ZEPTAT SE PŘES E-MAIL
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
+        <footer
+          class="relative bg-foreground text-background py-20 overflow-hidden"
+        >
+          <div class="absolute top-0 left-0 right-0 h-px bg-primary/30"></div>
+          <div class="absolute inset-0 pointer-events-none overflow-hidden">
+            <div
+              class="absolute bottom-0 left-1/4 w-px h-1/2 bg-primary/10"
+            ></div>
+            <div
+              class="absolute bottom-0 right-1/3 w-px h-1/3 bg-primary/10"
+            ></div>
+          </div>
+          <div class="relative max-w-6xl mx-auto px-6">
+            <div class="flex flex-col-reverse gap-12">
+              <div
+                class="grid sm:grid-cols-3 gap-8 pt-8 border-t border-background/10"
+              >
+                <div>
+                  <div class="flex items-center gap-3 mb-4">
+                    <div
+                      class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center"
+                    >
+                      <svg viewBox="0 0 60 60" fill="none" class="w-4 h-4">
+                        <path
+                          d="M5 48 L20 20 L35 48 Z"
+                          fill="hsl(186,100%,50%)"
+                          opacity="0.9"
+                        ></path>
+                        <path d="M22 48 L38 16 L54 48 Z" fill="white"></path>
+                        <path
+                          d="M22 48 L38 16 L54 48 Z"
+                          fill="hsl(186,100%,50%)"
+                          opacity="0.4"
+                        ></path>
+                      </svg>
+                    </div>
+                    <div>
+                      <p
+                        class="font-display text-xs tracking-[0.3em] text-background/50"
+                      >
+                        SKI SERVIS
+                      </p>
+                      <p
+                        class="font-display text-sm tracking-[0.2em] text-primary"
+                      >
+                        KEZNIKL
+                      </p>
+                    </div>
+                  </div>
+                  <p
+                    class="font-body text-sm text-background/40 leading-relaxed"
+                  >
+                    Profesionální servis lyží a snowboardů v Brně a okolí.
+                  </p>
+                </div>
+                <div>
+                  <p
+                    class="font-mono text-xs text-primary tracking-wider uppercase mb-4"
+                  >
+                    Kontakt
+                  </p>
+                  <div class="space-y-2">
+                    <a
+                      href="mailto:dominik.keznikl@seznam.cz"
+                      class="block font-body text-sm text-background/60 hover:text-primary transition-colors"
+                      >dominik.keznikl@seznam.cz</a
+                    ><a
+                      href="tel:+420737837157"
+                      class="block font-mono text-sm text-background/60 hover:text-primary transition-colors"
+                      >+420 737 837 157</a
+                    >
+                    <p class="font-body text-sm text-background/40" data-contact-location>
+                      Brno a okolí
+                    </p>
+                  </div>
+                </div>
+                <div>
+                  <p
+                    class="font-mono text-xs text-primary tracking-wider uppercase mb-4"
+                  >
+                    Navigace
+                  </p>
+                  <div class="space-y-2">
+                    <button
+                      class="block font-body text-sm text-background/60 hover:text-primary transition-colors capitalize"
+                    >
+                      Úvod</button
+                    ><button
+                      class="block font-body text-sm text-background/60 hover:text-primary transition-colors capitalize"
+                    >
+                      O nás</button
+                    ><button
+                      class="block font-body text-sm text-background/60 hover:text-primary transition-colors capitalize"
+                    >
+                      Ceník</button
+                    ><button
+                      class="block font-body text-sm text-background/60 hover:text-primary transition-colors capitalize"
+                    >
+                      Kontakt
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div class="text-center">
+                <p class="font-mono text-xs text-background/20 tracking-wider">
+                  © 2026 Ski Servis Keznikl — Všechna práva vyhrazena
+                </p>
+              </div>
+            </div>
+          </div>
+        </footer>
+      </div>
+      <div
+        class="fixed top-0 z-[100] flex max-h-screen w-full flex-col-reverse p-4 sm:bottom-0 sm:right-0 sm:top-auto sm:flex-col md:max-w-[420px]"
+      >
+        <div
+          class="fixed top-0 z-[100] flex max-h-screen w-full flex-col-reverse p-4 sm:bottom-0 sm:right-0 sm:top-auto sm:flex-col md:max-w-[420px]"
+        ></div>
+      </div>
+    </div>
+  </body>
+</html>
