@@ -66,7 +66,7 @@ window.NASTAVENI = {
   },
 
   banner: {
-    zobrazit: false,
+    zobrazit: true,
     text: "Dovolená – servis bude opět otevřen od 15. srpna.",
 
     // Volitelné: když odkaz nechcete, ponechte prázdné uvozovky.
