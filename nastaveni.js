@@ -63,6 +63,7 @@ window.NASTAVENI = {
     telefon: "+420737837157",
     telefonZobrazeni: "+420 737 837 157",
     lokalita: "Brno a okolí",
+    instagram: "@ski_servis_keznikl",
   },
 
   banner: {
